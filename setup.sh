@@ -6,3 +6,5 @@ pip install -U pip setuptools
 pip install poetry
 
 poetry install
+
+echo "===>> Run 'source .venv/bin/activate'"

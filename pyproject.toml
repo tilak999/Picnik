@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "test-code"
+name = "picnik"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
@@ -10,7 +10,11 @@ readme = "README.md"
 python = "^3.9"
 fastapi = "^0.103.2"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
+pylint = "^3.0.1"
 
+[tool.poetry.scripts]
+dev = 'uvicorn api.main:app --reload'
+prisma-push = 'prisma db push'
 
 [build-system]
 requires = ["poetry-core"]

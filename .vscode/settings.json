@@ -1,7 +1,10 @@
 {
   "editor.formatOnSave": true,
-  "python.defaultInterpreterPath": ".venv/bin/python",
-  "pylint.importStrategy": "fromEnvironment",
+  "pylint.path": [
+    "~/.venv/bin/python",
+    "-m",
+    "pylint"
+  ],
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -10,5 +13,14 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/__pycache__": true
-  }
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none",
+  "python.testing.pytestArgs": [
+    "."
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

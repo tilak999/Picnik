@@ -1,7 +1,7 @@
 // database
 datasource db {
-  provider = "sqlite"
-  url      = "file:../data/database.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // generator
@@ -10,20 +10,23 @@ generator client {
   recursive_type_depth = 5
 }
 
-// data models
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  views     Int     @default(0)
-  published Boolean @default(false)
-  author    User?   @relation(fields: [author_id], references: [id])
-  author_id Int?
+model Media {
+  id            Int      @id @default(autoincrement())
+  filename      String
+  path          String
+  mimetype      String
+  rawExifData   String
+  published     Boolean  @default(false)
+  location      String
+  creation_date DateTime @default(now())
+  owner         User     @relation(fields: [owner_id], references: [id])
+  owner_id      Int
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  name     String?
+  posts    Media[]
 }

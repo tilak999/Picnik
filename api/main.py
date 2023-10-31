@@ -1,10 +1,10 @@
 """ Main module for REST API """
 from typing import Union
+import os
 from fastapi import FastAPI
 from prisma import Prisma
-import os 
 
-app = FastAPI()
+app = FastAPI() 
 prisma = Prisma()
 
 
@@ -13,10 +13,7 @@ async def read_root():
     """Function printing python version."""
     for file in os.walk("/workspaces/Picnik"):
         print(file)
-    data = {
-        'name': 'Robert xx',
-        'email': 'robert_xx@craigie.dev'
-    }
+    data = {"name": "Robert xx", "email": "robert_xx@craigie.dev"}
     return data
 
 

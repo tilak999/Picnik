@@ -1,0 +1,1 @@
+MIN_STR_ID_LENGTH = 5

@@ -11,22 +11,78 @@ generator client {
 }
 
 model Media {
-  id            Int      @id @default(autoincrement())
+  id            String           @id
   filename      String
-  path          String
+  filesize      Int?
+  filehash      String?
+  path          String           @unique
   mimetype      String
   rawExifData   String
-  published     Boolean  @default(false)
+  published     Boolean          @default(false)
   location      String
+  upload_date   DateTime         @default(now())
+  owner         User             @relation(fields: [owner_id], references: [id])
+  owner_id      String
+  isArchived    Boolean          @default(false)
+  isProtected   Boolean          @default(false)
+  trashed_date  DateTime?
+  uploaded_from AuthorisedDevice @relation(fields: [device_id], references: [id])
+  device_id     String
+  albums        AlbumMedia[]
+}
+
+model Album {
+  id            String       @id
+  title         String
+  owner         User         @relation(fields: [owner_id], references: [id])
+  owner_id      String
+  creation_date DateTime     @default(now())
+  media         AlbumMedia[]
+}
+
+model AlbumMedia {
+  media         Media    @relation(fields: [media_id], references: [id])
+  media_id      String
+  album         Album    @relation(fields: [album_id], references: [id])
+  album_id      String
+  User          User?    @relation(fields: [user_id], references: [id])
+  user_id       String?
   creation_date DateTime @default(now())
-  owner         User     @relation(fields: [owner_id], references: [id])
-  owner_id      Int
+
+  @@id([media_id, album_id])
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  password String
-  name     String?
-  posts    Media[]
+  id               String             @id
+  email            String             @unique
+  password         String
+  name             String?
+  isSystemAdmin    Boolean            @default(false)
+  posts            Media[]
+  Audit            Audit[]
+  AuthorisedDevice AuthorisedDevice[]
+  AlbumMedia       AlbumMedia[]
+  Album            Album[]
+}
+
+model Audit {
+  id            Int              @id
+  user          User             @relation(fields: [user_id], references: [id])
+  device        AuthorisedDevice @relation(fields: [device_id], references: [id])
+  device_id     String
+  user_id       String
+  subject       String
+  message       String
+  payload       Json?
+  creation_date DateTime         @default(now())
+}
+
+model AuthorisedDevice {
+  id            String   @id
+  name          String
+  user          User     @relation(fields: [user_id], references: [id])
+  user_id       String
+  Audit         Audit[]
+  creation_date DateTime @default(now())
+  Media         Media[]
 }

@@ -63,6 +63,7 @@ model User {
   AuthorisedDevice AuthorisedDevice[]
   AlbumMedia       AlbumMedia[]
   Album            Album[]
+  Config           Config[]
 }
 
 model Audit {
@@ -85,4 +86,14 @@ model AuthorisedDevice {
   Audit         Audit[]
   creation_date DateTime @default(now())
   Media         Media[]
+}
+
+model Config {
+  key           String
+  value         String
+  user          User     @relation(fields: [user_id], references: [id])
+  user_id       String
+  creation_date DateTime @default(now()) @updatedAt
+
+  @@id([key, user_id])
 }

@@ -12,6 +12,10 @@ class BaseServiceClass:
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger(__name__)
 
+    async def get_config(self, key: str):
+        await self.prisma.connect()
+        return await self.prisma.config.find_first(where={"key": key})
+
     async def db(self):
         if not self.prisma.is_connected():
             await self.prisma.connect()

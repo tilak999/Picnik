@@ -26,7 +26,7 @@ class UserManager(BaseServiceClass):
         return user
 
     async def is_first_user(self):
-        db = await super().db()
+        db = await self.db()
         count = await db.user.count()
         return count == 0
 

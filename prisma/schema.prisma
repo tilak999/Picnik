@@ -1,38 +1,63 @@
 // database
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 // generator
 generator client {
   provider             = "prisma-client-py"
   recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"]
 }
 
 model Media {
-  id            String           @id
+  id            String                 @id @default(uuid())
   filename      String
   filesize      Int?
   filehash      String?
-  path          String           @unique
+  path          String                 @unique
   mimetype      String
-  rawExifData   String
-  published     Boolean          @default(false)
-  location      String
-  upload_date   DateTime         @default(now())
-  owner         User             @relation(fields: [owner_id], references: [id])
+  originalDate  DateTime               @default(now())
+  rawExifData   Json
+  published     Boolean                @default(false)
+  location      Json?
+  clip_vector   Unsupported("vector")?
+  tags          String?
+  upload_date   DateTime               @default(now())
+  owner         User                   @relation(fields: [owner_id], references: [id])
   owner_id      String
-  isArchived    Boolean          @default(false)
-  isProtected   Boolean          @default(false)
+  isArchived    Boolean                @default(false)
+  isProtected   Boolean                @default(false)
   trashed_date  DateTime?
-  uploaded_from AuthorisedDevice @relation(fields: [device_id], references: [id])
+  uploaded_from AuthorisedDevice       @relation(fields: [device_id], references: [id])
   device_id     String
   albums        AlbumMedia[]
+  Face          Face[]
+}
+
+model People {
+  id            String   @id @default(uuid())
+  face          Face     @relation(fields: [face_id], references: [id])
+  face_id       String
+  name          String?
+  thumbnail     String
+  creation_date DateTime @default(now())
+}
+
+model Face {
+  id            String                @id @default(uuid())
+  media         Media                 @relation(fields: [media_id], references: [id])
+  media_id      String
+  bbox          Float[]
+  vector        Unsupported("vector")
+  People        People[]
+  creation_date DateTime              @default(now())
 }
 
 model Album {
-  id            String       @id
+  id            String       @id @default(uuid())
   title         String
   owner         User         @relation(fields: [owner_id], references: [id])
   owner_id      String
@@ -53,7 +78,7 @@ model AlbumMedia {
 }
 
 model User {
-  id               String             @id
+  id               String             @id @default(uuid())
   email            String             @unique
   password         String
   name             String?
@@ -67,7 +92,7 @@ model User {
 }
 
 model Audit {
-  id            Int              @id
+  id            String           @id @default(uuid())
   user          User             @relation(fields: [user_id], references: [id])
   device        AuthorisedDevice @relation(fields: [device_id], references: [id])
   device_id     String

@@ -18,6 +18,10 @@ pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-multipart = "^0.0.6"
 pillow = "^10.1.0"
 arrow = "^1.3.0"
+insightface = "^0.7.3"
+onnxruntime = "^1.16.3"
+typesense = "^0.18.0"
+geopy = "^2.4.1"
 
 [tool.poetry.scripts]
 dev = 'uvicorn api.main:app --reload'
@@ -26,3 +30,8 @@ prisma-push = 'prisma db push'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]

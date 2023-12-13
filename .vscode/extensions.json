@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "Prisma.prisma",
+        "ms-python.vscode-pylance",
+        "ms-python.pylint",
+        "ms-python.python",
+        "charliermarsh.ruff"
+    ]
+}

@@ -1,6 +1,6 @@
 """ Main module for REST API """
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.internal.helper.exception import ServiceException
@@ -15,7 +15,7 @@ app.include_router(media_route.router)
 
 
 @app.exception_handler(ServiceException)
-async def unicorn_exception_handler(exc: ServiceException):
+async def unicorn_exception_handler(_: Request, exc: ServiceException):
     return JSONResponse(
         status_code=400,
         content={

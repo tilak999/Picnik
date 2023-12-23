@@ -27,6 +27,6 @@ async def create_upload_file(
     thumbnail_path = await mediaManager.generate_thumbnail(media.id, media.path)
 
     faces = mlManager.run_inference(media.path)
-    print(faces)
+    await mlManager.save_face_model(user.user_id, media.id, faces)
 
     return thumbnail_path

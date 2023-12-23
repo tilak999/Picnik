@@ -1,15 +1,16 @@
 """Module for all the ML related stuff"""
 import warnings
+from uuid import uuid4
 
 import cv2
 from cv2.typing import MatLike
 from insightface.app import FaceAnalysis
 
+import prisma
 from app.internal.config.constants import ML_MODEL_DIRECTORY_PATH
 from app.internal.helper.base_service import BaseServiceClass
 from app.internal.helper.getenv import env
-
-warnings.filterwarnings("error")
+from app.internal.schema.face import Face
 
 providers = ["CPUExecutionProvider"]
 provider_options = [{"arena_extend_strategy": "kSameAsRequested"}] * len(providers)
@@ -56,17 +57,53 @@ class MlManager(BaseServiceClass):
             relative_area = (bbox_area / image_area) * 100
             if relative_area > 2:
                 filtered.append(
-                    {
-                        "path": image_path,
-                        "embedding": face.embedding,
-                        "age": face.age,
-                        "bbox": bbox,
-                    }
+                    Face(
+                        path=image_path,
+                        embedding=face.embedding.tolist(),
+                        age=face.age,
+                        bbox=bbox,
+                    )
                 )
         return filtered
 
-    def run_inference(self, media_path: str):
-        img = cv2.imread(media_path)  # pylint: disable=no-member
-        faces = self.__face_analysis.get(img)
-        filtered_result = self.filter_faces(img, faces, media_path)
-        return filtered_result
+    def run_inference(self, media_path: str) -> list[Face]:
+        with warnings.catch_warnings():
+            img = cv2.imread(media_path)  # pylint: disable=no-member
+            faces = self.__face_analysis.get(img)
+            filtered_result = self.filter_faces(img, faces, media_path)
+            return filtered_result
+
+    async def get_matching_face_vector(self, uid: str, face: Face):
+        db = await self.db()
+        vector = f"'{str(face.embedding)}'"
+        result = await db.query_raw(
+            f"""
+                                    
+            SELECT f.* FROM "Face" f
+            inner JOIN "Media" m
+                on f.media_id = m.id
+            inner JOIN "User" u
+                on u.id = m.owner_id
+            where u.id = '{uid}'
+            order by f.vector <-> {vector} LIMIT 1;
+
+            """,
+            model=prisma.models.Face,
+        )
+        return result[0] if len(result) > 0 else None
+
+    async def _save_face_object(self, media_id: str, face: Face):
+        db = await self.db()
+        bbox = str(face.bbox)
+        vector = str(face.embedding)
+        uuid = uuid4()
+        return await db.query_raw(
+            f""" INSERT INTO "Face" (id, media_id, bbox, vector) 
+                VALUES ('{uuid}', '{media_id}', ARRAY {bbox},'{vector}'); """
+        )
+
+    async def save_face_model(self, user_id: str, media_id: str, faces: list[Face]):
+        for face in faces:
+            match = await self.get_matching_face_vector(user_id, face)
+            if match is not None:
+                await self._save_face_object(media_id, face)
